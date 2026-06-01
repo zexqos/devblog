@@ -1,0 +1,24 @@
+.tag {
+  display: inline-block;
+  background: var(--tag-bg);
+  color: var(--tag-text);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  cursor: default;
+  transition: opacity 0.15s;
+}
+
+.tagClickable {
+  cursor: pointer;
+}
+
+.tagClickable:hover {
+  opacity: 0.75;
+}
+
+.tagActive {
+  background: var(--accent);
+  color: #fff;
+}
