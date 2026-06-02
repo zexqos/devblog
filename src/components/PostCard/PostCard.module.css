@@ -5,6 +5,11 @@
   overflow: hidden;
   transition: transform 0.2s, box-shadow 0.2s;
   cursor: pointer;
+  
+  /* Исправление бага высоты: выстраиваем карточку в колонку и заставляем её растягиваться на 100% строки */
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .card:hover {
@@ -31,6 +36,11 @@
 
 .body {
   padding: 16px;
+  
+  /* Исправление бага высоты: заставляем текстовое тело заполнять всё доступное пространство */
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
 }
 
 .tags {
@@ -72,7 +82,9 @@
   object-fit: cover;
 }
 
-.dot { color: var(--border); }
+.dot { 
+  color: var(--border); 
+}
 
 .actions {
   display: flex;
@@ -80,6 +92,9 @@
   gap: 8px;
   padding-top: 12px;
   border-top: 1px solid var(--border);
+  
+  /* Исправление бага высоты: автоматический маржин сверху железно выталкивает блок к нижнему краю карточки */
+  margin-top: auto; 
 }
 
 .actionBtn {

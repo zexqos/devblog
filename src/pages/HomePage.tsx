@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useFetch from '../hooks/useFetch';
 import useDebounce from '../hooks/useDebounce';
@@ -36,21 +36,29 @@ function SkeletonCard() {
 
 function HomePage() {
   const navigate   = useNavigate();
-  const [search, setSearch]   = useState('');
-  const [activeTag, setActiveTag] = useState('');
-  const [page, setPage]       = useState(1);
+  const [search, setSearch]         = useState('');
+  const [activeTag, setActiveTag]   = useState('');
+  const [page, setPage]             = useState(1);
   const [allArticles, setAllArticles] = useState<Article[]>([]);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   const debouncedSearch = useDebounce(search, 500);
 
   const params = {
     per_page: 12,
     page,
-    ...(activeTag       ? { tag: activeTag }       : {}),
-    ...(debouncedSearch ? { q: debouncedSearch }   : {}),
+    ...(activeTag       ? { tag: activeTag }     : {}),
+    ...(debouncedSearch ? { q: debouncedSearch } : {}),
   };
 
   const { data, loading, error, refetch } = useFetch<Article[]>('/articles', params);
+
+  useEffect(() => {
+    if (data && page === 1) {
+      setAllArticles(data);
+      setIsLoadingMore(false);
+    }
+  }, [data, page]);
 
   const handleSearchChange = (val: string) => {
     setSearch(val);
@@ -64,11 +72,16 @@ function HomePage() {
   };
 
   const handleLoadMore = () => {
-    if (data) setAllArticles(prev => [...prev, ...data]);
-    setPage(p => p + 1);
+    if (data) {
+      setAllArticles(prev => {
+        const existingIds = new Set(prev.map(a => a.id));
+        const newArticles = data.filter(a => !existingIds.has(a.id));
+        return [...prev, ...newArticles];
+      });
+      setIsLoadingMore(true);
+      setPage(p => p + 1);
+    }
   };
-
-  const articles = page === 1 && data ? data : allArticles;
 
   return (
     <div>
@@ -103,13 +116,19 @@ function HomePage() {
       )}
 
       <div style={styles.grid}>
-        {loading
+        {loading && !isLoadingMore
           ? Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)
-          : articles.map(article => (
+          : allArticles.map(article => (
               <PostCard key={article.id} article={article} />
             ))
         }
       </div>
+
+      {isLoadingMore && loading && (
+        <div style={styles.grid}>
+          {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
+        </div>
+      )}
 
       {!loading && !error && data && data.length === 12 && (
         <button style={styles.loadMore} onClick={handleLoadMore}>
