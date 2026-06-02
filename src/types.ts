@@ -42,3 +42,14 @@ export interface ApiError {
   message: string;
   status?: number;
 }
+
+export interface Comment {
+  id:           number;
+  created_at:   string;
+  body_html:    string;
+  user: {
+    name:          string;
+    username:      string;
+    profile_image: string;
+  };
+}

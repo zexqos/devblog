@@ -1,4 +1,4 @@
-import { memo, useState } from 'react';
+import { memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { Article } from '../../types';
 import { useBookmarks } from '../../context/BookmarksContext';
@@ -16,64 +16,47 @@ function PostCard({ article }: PostCardProps) {
   const liked      = isLiked(article.id);
   const bookmarked = isBookmarked(article.id);
 
-  // Стейт на случай, если ссылка на картинку есть, но она битая (ошибка 404 и т.д.)
-  const [imgError, setImgError] = useState(false);
-
-  const handleNavigateToPost = () => {
-    navigate(`/post/${article.id}`);
-  };
-
   return (
     <div className={styles.card}>
-      {/* Проверяем: если картинки изначально нет ИЛИ если при загрузке 
-        возникла ошибка (imgError === true) — показываем шаблон 
-      */}
-      {!article.cover_image || imgError ? (
-        <div className={styles.coverPlaceholder} onClick={handleNavigateToPost}>
-          📝
-        </div>
+      {article.cover_image ? (
+        <img
+          src={article.cover_image}
+          alt={article.title}
+          className={styles.cover}
+          onClick={() => navigate(`/post/${article.id}`)}
+        />
       ) : (
-        <div className={styles.coverWrapper} onClick={handleNavigateToPost}>
-          <img
-            src={article.cover_image}
-            alt=""
-            className={styles.cover}
-            // Если ссылка битая, сработает этот триггер и заменит картинку на шаблон
-            onError={() => setImgError(true)} 
-          />
+        <div
+          className={styles.coverPlaceholder}
+          onClick={() => navigate(`/post/${article.id}`)}
+        >
+          📝
         </div>
       )}
 
       <div className={styles.body}>
         <div className={styles.tags}>
           {(Array.isArray(article.tag_list) ? article.tag_list : []).slice(0, 3).map(tag => (
-            <span
+            <TagBadge
               key={tag}
-              onClick={(e) => e.stopPropagation()}
-              style={{ display: 'inline-block' }}
-            >
-              <TagBadge
-                key={tag}
-                tag={tag}
-                onClick={() => navigate(`/tag/${tag}`)}
-              />
-            </span>
+              tag={tag}
+              onClick={() => navigate(`/tag/${tag}`)}
+            />
           ))}
         </div>
 
-        <h2 className={styles.title} onClick={handleNavigateToPost}>
+        <h2
+          className={styles.title}
+          onClick={() => navigate(`/post/${article.id}`)}
+        >
           {article.title}
         </h2>
 
-        <div className={styles.meta} onClick={handleNavigateToPost}>
+        <div className={styles.meta}>
           <img
-            src={article.user.profile_image || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=50'}
-            alt=""
+            src={article.user.profile_image}
+            alt={article.user.name}
             className={styles.avatar}
-            onError={(e) => {
-              // На всякий случай защищаем и аватарку автора от падения
-              e.currentTarget.src = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=50';
-            }}
           />
           <span>{article.user.name}</span>
           <span className={styles.dot}>·</span>
@@ -85,21 +68,20 @@ function PostCard({ article }: PostCardProps) {
         <div className={styles.actions}>
           <button
             className={`${styles.actionBtn} ${liked ? styles.actionBtnActive : ''}`}
-            onClick={(e) => { e.stopPropagation(); toggleLike(article.id); }}
+            onClick={() => toggleLike(article.id)}
           >
             ♥ {article.public_reactions_count + (liked ? 1 : 0)}
           </button>
-          
-          <button 
+          <button
             className={styles.actionBtn}
-            onClick={(e) => { e.stopPropagation(); handleNavigateToPost(); }}
+            onClick={() => navigate(`/post/${article.id}#comments`)}
+            title="Читать комментарии"
           >
             💬 {article.comments_count}
           </button>
-          
           <button
             className={`${styles.actionBtn} ${styles.bookmarkBtn} ${bookmarked ? styles.actionBtnActive : ''}`}
-            onClick={(e) => { e.stopPropagation(); toggleBookmark(article.id); }}
+            onClick={() => toggleBookmark(article.id)}
           >
             🔖 {bookmarked ? 'Сохранено' : 'Сохранить'}
           </button>

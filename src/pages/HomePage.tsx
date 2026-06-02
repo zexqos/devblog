@@ -36,9 +36,9 @@ function SkeletonCard() {
 
 function HomePage() {
   const navigate   = useNavigate();
-  const [search, setSearch]         = useState('');
-  const [activeTag, setActiveTag]   = useState('');
-  const [page, setPage]             = useState(1);
+  const [search, setSearch]           = useState('');
+  const [activeTag, setActiveTag]     = useState('');
+  const [page, setPage]               = useState(1);
   const [allArticles, setAllArticles] = useState<Article[]>([]);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
@@ -62,7 +62,10 @@ function HomePage() {
 
   const handleSearchChange = (val: string) => {
     setSearch(val);
-    if (val.trim()) navigate(`/search?q=${encodeURIComponent(val.trim())}`);
+  };
+
+  const handleSearchSubmit = () => {
+    if (search.trim()) navigate(`/search?q=${encodeURIComponent(search.trim())}`);
   };
 
   const handleTagClick = (tag: string) => {
@@ -90,6 +93,7 @@ function HomePage() {
           value={search}
           onChange={handleSearchChange}
           placeholder="Поиск статей..."
+          onSubmit={handleSearchSubmit}
         />
         <div style={styles.tags}>
           <TagBadge
