@@ -16,7 +16,7 @@ const styles: Record<string, React.CSSProperties> = {
   actions:     { display: 'flex', gap: '12px', marginBottom: '32px', paddingBottom: '24px', borderBottom: '1px solid var(--border)' },
   actionBtn:   { background: 'transparent', border: '1px solid var(--border)', borderRadius: '8px', padding: '6px 16px', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '14px' },
   actionBtnActive: { background: 'transparent', border: '1px solid var(--accent)', borderRadius: '8px', padding: '6px 16px', color: 'var(--accent)', cursor: 'pointer', fontSize: '14px' },
-  body:        { color: 'var(--text-primary)', lineHeight: '1.8', fontSize: '16px' },
+  body: { color: 'var(--text-primary)', lineHeight: '1.8', fontSize: '16px', overflowX: 'hidden', wordBreak: 'break-word' },
   skeletonWrap:{ display: 'flex', flexDirection: 'column', gap: '12px' },
   commentsSection: { marginTop: '48px', paddingTop: '32px', borderTop: '1px solid var(--border)' },
   commentsTitle:   { fontSize: '22px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '24px' },

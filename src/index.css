@@ -36,3 +36,8 @@ a { color: inherit; text-decoration: none; }
   --tag-bg:         #1E3A5F;
   --tag-text:       #93C5FD;
 }
+
+img { max-width: 100%; height: auto; }
+pre { overflow-x: auto; max-width: 100%; }
+code { word-break: break-all; }
+table { max-width: 100%; overflow-x: auto; display: block; }

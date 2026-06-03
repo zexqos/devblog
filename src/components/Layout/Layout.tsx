@@ -11,7 +11,14 @@ function Layout() {
   const location = useLocation();
 
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    const savedPosition = sessionStorage.getItem(`scroll_${location.pathname}`);
+    if (savedPosition) {
+      setTimeout(() => {
+        window.scrollTo({ top: parseInt(savedPosition), behavior: 'instant' });
+      }, 50);
+    } else {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
   }, [location.pathname]);
 
   useEffect(() => {

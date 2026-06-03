@@ -16,6 +16,13 @@ const styles: Record<string, React.CSSProperties> = {
   toFeedBtn: { marginTop: '16px', padding: '10px 24px', background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '15px', fontWeight: '600' },
   skeletonCard: { background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '14px', overflow: 'hidden' },
   skeletonBody: { padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' },
+  overlay:   { position: 'fixed' as const, inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  modal:     { background: 'var(--bg-card)', borderRadius: '16px', padding: '28px', maxWidth: '360px', width: '90%', textAlign: 'center' as const, boxShadow: '0 8px 32px rgba(0,0,0,0.2)' },
+  modalTitle:{ fontSize: '18px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '8px' },
+  modalText: { color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '24px' },
+  modalBtns: { display: 'flex', gap: '12px', justifyContent: 'center' },
+  cancelBtn: { padding: '8px 24px', background: 'transparent', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text-primary)', cursor: 'pointer', fontWeight: '600' },
+  confirmBtn:{ padding: '8px 24px', background: '#EF4444', border: 'none', borderRadius: '8px', color: '#fff', cursor: 'pointer', fontWeight: '600' },
 };
 
 function BookmarksPage() {
@@ -23,6 +30,7 @@ function BookmarksPage() {
   const { bookmarks, clearBookmarks } = useBookmarks();
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading,  setLoading]  = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   useEffect(() => {
     if (bookmarks.length === 0) { setArticles([]); return; }
@@ -36,12 +44,34 @@ function BookmarksPage() {
       .finally(() => setLoading(false));
   }, [bookmarks]);
 
+  const handleClearConfirm = () => {
+    clearBookmarks();
+    setShowConfirm(false);
+  };
+
   return (
     <div>
+      {showConfirm && (
+        <div style={styles.overlay} onClick={() => setShowConfirm(false)}>
+          <div style={styles.modal} onClick={e => e.stopPropagation()}>
+            <p style={styles.modalTitle}>Очистить закладки?</p>
+            <p style={styles.modalText}>Все сохранённые посты будут удалены. Это действие нельзя отменить.</p>
+            <div style={styles.modalBtns}>
+              <button style={styles.cancelBtn} onClick={() => setShowConfirm(false)}>
+                Отмена
+              </button>
+              <button style={styles.confirmBtn} onClick={handleClearConfirm}>
+                Очистить
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div style={styles.header}>
         <h1 style={styles.title}>🔖 Мои закладки</h1>
         {bookmarks.length > 0 && (
-          <button style={styles.clearBtn} onClick={clearBookmarks}>
+          <button style={styles.clearBtn} onClick={() => setShowConfirm(true)}>
             Очистить всё
           </button>
         )}

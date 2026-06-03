@@ -6,15 +6,21 @@ import TagBadge from '../TagBadge/TagBadge';
 import styles from './PostCard.module.css';
 
 interface PostCardProps {
-  article: Article;
+  article:     Article;
+  onNavigate?: (path: string) => void;
 }
 
-function PostCard({ article }: PostCardProps) {
+function PostCard({ article, onNavigate }: PostCardProps) {
   const navigate = useNavigate();
   const { toggleBookmark, toggleLike, isBookmarked, isLiked } = useBookmarks();
 
   const liked      = isLiked(article.id);
   const bookmarked = isBookmarked(article.id);
+
+  const go = (path: string) => {
+    if (onNavigate) onNavigate(path);
+    else navigate(path);
+  };
 
   return (
     <div className={styles.card}>
@@ -23,12 +29,12 @@ function PostCard({ article }: PostCardProps) {
           src={article.cover_image}
           alt={article.title}
           className={styles.cover}
-          onClick={() => navigate(`/post/${article.id}`)}
+          onClick={() => go(`/post/${article.id}`)}
         />
       ) : (
         <div
           className={styles.coverPlaceholder}
-          onClick={() => navigate(`/post/${article.id}`)}
+          onClick={() => go(`/post/${article.id}`)}
         >
           📝
         </div>
@@ -40,14 +46,14 @@ function PostCard({ article }: PostCardProps) {
             <TagBadge
               key={tag}
               tag={tag}
-              onClick={() => navigate(`/tag/${tag}`)}
+              onClick={() => go(`/tag/${tag}`)}
             />
           ))}
         </div>
 
         <h2
           className={styles.title}
-          onClick={() => navigate(`/post/${article.id}`)}
+          onClick={() => go(`/post/${article.id}`)}
         >
           {article.title}
         </h2>
@@ -74,7 +80,7 @@ function PostCard({ article }: PostCardProps) {
           </button>
           <button
             className={styles.actionBtn}
-            onClick={() => navigate(`/post/${article.id}#comments`)}
+            onClick={() => go(`/post/${article.id}#comments`)}
             title="Читать комментарии"
           >
             💬 {article.comments_count}
