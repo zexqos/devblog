@@ -42,7 +42,6 @@ function SkeletonCard() {
 
 function HomePage() {
   const navigate = useNavigate();
-  // Берём search и setSearch из глобального контекста, чтобы они не стирались при переходе
   const { articles, setArticles, currentPage, setCurrentPage, search, setSearch } = useFeed();
   const [activeTags, setActiveTags]     = useState<string[]>([]);
   const [loading, setLoading]           = useState(false);
@@ -91,7 +90,6 @@ function HomePage() {
   }, [currentPage, articles, setArticles, setCurrentPage]);
 
   useEffect(() => {
-    // Теперь условие проверяет, если статьи загружены и строка поиска совпадает с текущим дебаунсом — лишний раз не загружаем
     if (articles.length > 0 && activeTags.length === 0) {
       return;
     }
@@ -109,12 +107,10 @@ function HomePage() {
   }, [articles, debouncedSearch]);
 
   const handleSearchChange = (val: string) => {
-    setSearch(val); // Записываем в глобальный контекст
+    setSearch(val);
   };
 
-  const handleSearchSubmit = () => {
-    // Сабмит формы поиска
-  };
+  const handleSearchSubmit = () => {};
 
   const handleTagClick = (tag: string) => {
     if (tag === '') {

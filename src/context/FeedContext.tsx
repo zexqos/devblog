@@ -7,8 +7,8 @@ interface FeedContextType {
   setArticles: (articles: Article[]) => void;
   currentPage: number;
   setCurrentPage: (page: number) => void;
-  search: string; // Новое: храним строку поиска в контексте
-  setSearch: (search: string) => void; // Новое: функция изменения поиска
+  search: string;
+  setSearch: (search: string) => void;
 }
 
 const FeedContext = createContext<FeedContextType | undefined>(undefined);
@@ -16,7 +16,7 @@ const FeedContext = createContext<FeedContextType | undefined>(undefined);
 export function FeedProvider({ children }: { children: ReactNode }) {
   const [articles, setArticles] = useState<Article[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [search, setSearch] = useState(''); // Новое
+  const [search, setSearch] = useState('');
 
   return (
     <FeedContext.Provider value={{ articles, setArticles, currentPage, setCurrentPage, search, setSearch }}>
