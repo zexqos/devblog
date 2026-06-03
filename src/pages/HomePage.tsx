@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useFeed } from '../context/FeedContext';
-import useDebounce from '../hooks/useDebounce';
 import PostCard from '../components/PostCard/PostCard';
 import SearchBar from '../components/SearchBar/SearchBar';
 import TagBadge from '../components/TagBadge/TagBadge';
@@ -48,7 +47,6 @@ function HomePage() {
   const [moreLoading, setMoreLoading]   = useState(false);
   const [error, setError]               = useState<string | null>(null);
 
-  // Используем поисковый запрос напрямую для мгновенного отклика при возврате назад
   const isSearchMode = search.trim().length > 0;
 
   const fetchArticles = useCallback(async (tag?: string, isLoadMore = false) => {
@@ -89,14 +87,12 @@ function HomePage() {
     }
   }, [currentPage, articles, setArticles, setCurrentPage]);
 
-  // Загружаем только если массив пустой (первый вход на сайт) или изменились теги
   useEffect(() => {
     if (articles.length === 0 || activeTags.length > 0) {
       fetchArticles(activeTags[0], false);
     }
   }, [activeTags]);
 
-  // Фильтрация без дебаунса для мгновенного восстановления состояния из контекста
   const filteredArticles = useMemo(() => {
     const query = search.toLowerCase().trim();
     if (!query) return articles;
