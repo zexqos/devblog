@@ -58,6 +58,10 @@ function PostCard({ article, onNavigate }: PostCardProps) {
           {article.title}
         </h2>
 
+        {article.description && (
+          <p className={styles.description}>{article.description}</p>
+        )}
+
         <div className={styles.meta}>
           <img
             src={article.user.profile_image}

@@ -9,7 +9,6 @@ import Skeleton from '../components/Skeleton/Skeleton';
 import type { Article } from '../types';
 
 const POPULAR_TAGS = ['react', 'typescript', 'javascript', 'python', 'css', 'webdev', 'node'];
-
 const CACHE_KEY = 'homepage_articles';
 const SCROLL_KEY = 'homepage_scroll';
 
@@ -41,33 +40,29 @@ function SkeletonCard() {
 
 function HomePage() {
   const navigate = useNavigate();
-  const [search, setSearch]             = useState('');
-  const [activeTags, setActiveTags]     = useState<string[]>([]);
-  const [page, setPage]                 = useState(1);
+  const [search, setSearch]               = useState('');
+  const [activeTags, setActiveTags]       = useState<string[]>([]);
+  const [page, setPage]                   = useState(1);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [allArticles, setAllArticles]     = useState<Article[]>(() => {
+    const cached = sessionStorage.getItem(CACHE_KEY);
+    return cached ? JSON.parse(cached) : [];
+  });
   const scrollRestored = useRef(false);
 
-  const cached = sessionStorage.getItem(CACHE_KEY);
-  const [allArticles, setAllArticles] = useState<Article[]>(
-    cached ? JSON.parse(cached) : []
-  );
-
-  const debouncedSearch = useDebounce(search, 500);
+  const debouncedSearch = useDebounce(search, 600);
+  const isSearchMode = debouncedSearch.trim().length > 0;
 
   const params = {
     per_page: 100,
     page,
-    ...(activeTags.length > 0 ? { tag: activeTags[0] } : {}),
-    ...(debouncedSearch ? { q: debouncedSearch } : {}),
+    ...(activeTags.length > 0 && !isSearchMode ? { tag: activeTags[0] } : {}),
+    ...(debouncedSearch.trim() ? { q: debouncedSearch.trim() } : {}),
   };
 
-  const { data, loading, error, refetch } = useFetch<Article[]>(
-    '/articles',
-    params
-  );
+  const { data, loading, error, refetch } = useFetch<Article[]>('/articles', params);
 
-  // Фильтрация по нескольким тегам на клиенте
-  const filteredArticles = activeTags.length > 1
+  const filteredArticles = activeTags.length > 1 && !isSearchMode
     ? allArticles.filter(a =>
         activeTags.every(tag =>
           (Array.isArray(a.tag_list) ? a.tag_list : []).includes(tag)
@@ -76,14 +71,19 @@ function HomePage() {
     : allArticles;
 
   useEffect(() => {
-    if (data && !isLoadingMore) {
-      setAllArticles(data);
-      sessionStorage.setItem(CACHE_KEY, JSON.stringify(data));
+    if (data) {
+      if (!isLoadingMore) {
+        setAllArticles(data);
+        if (!isSearchMode) {
+          sessionStorage.setItem(CACHE_KEY, JSON.stringify(data));
+        }
+      }
+      setIsLoadingMore(false);
     }
-  }, [data]);
+  }, [data, debouncedSearch]);
 
   useEffect(() => {
-    if (allArticles.length > 0 && !scrollRestored.current) {
+    if (allArticles.length > 0 && !scrollRestored.current && !isSearchMode) {
       const savedScroll = sessionStorage.getItem(SCROLL_KEY);
       if (savedScroll) {
         setTimeout(() => {
@@ -95,9 +95,7 @@ function HomePage() {
   }, [allArticles]);
 
   useEffect(() => {
-    const saveScroll = () => {
-      sessionStorage.setItem(SCROLL_KEY, String(window.scrollY));
-    };
+    const saveScroll = () => sessionStorage.setItem(SCROLL_KEY, String(window.scrollY));
     window.addEventListener('beforeunload', saveScroll);
     return () => {
       saveScroll();
@@ -105,7 +103,13 @@ function HomePage() {
     };
   }, []);
 
-  const handleSearchChange = (val: string) => setSearch(val);
+  const handleSearchChange = (val: string) => {
+    setSearch(val);
+    if (!val.trim()) {
+      const cached = sessionStorage.getItem(CACHE_KEY);
+      if (cached) setAllArticles(JSON.parse(cached));
+    }
+  };
 
   const handleSearchSubmit = () => {
     if (search.trim()) navigate(`/search?q=${encodeURIComponent(search.trim())}`);
@@ -120,20 +124,15 @@ function HomePage() {
       return;
     }
     setActiveTags(prev =>
-      prev.includes(tag)
-        ? prev.filter(t => t !== tag)
-        : [...prev, tag]
+      prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
     );
   };
 
   const handleLoadMore = () => {
     if (data) {
       setIsLoadingMore(true);
-      const updated = (() => {
-        const existingIds = new Set(allArticles.map(a => a.id));
-        const newArticles = data.filter(a => !existingIds.has(a.id));
-        return [...allArticles, ...newArticles];
-      })();
+      const existingIds = new Set(allArticles.map(a => a.id));
+      const updated = [...allArticles, ...data.filter(a => !existingIds.has(a.id))];
       setAllArticles(updated);
       sessionStorage.setItem(CACHE_KEY, JSON.stringify(updated));
       setPage(p => p + 1);
@@ -154,27 +153,29 @@ function HomePage() {
           placeholder="Поиск статей..."
           onSubmit={handleSearchSubmit}
         />
-        <div style={styles.tags}>
-          <TagBadge
-            tag="Все"
-            active={activeTags.length === 0}
-            onClick={() => handleTagClick('')}
-          />
-          {POPULAR_TAGS.map(tag => (
-            <TagBadge
-              key={tag}
-              tag={tag}
-              active={activeTags.includes(tag)}
-              onClick={() => handleTagClick(tag)}
-            />
-          ))}
-        </div>
-        {activeTags.length > 0 && (
+        {isSearchMode && (
+          <p style={{ color: 'var(--text-secondary)', fontSize: '14px', margin: '8px 0' }}>
+            Результаты по запросу: «{debouncedSearch}»
+            {!loading && ` — ${filteredArticles.length} статей`}
+          </p>
+        )}
+        {!isSearchMode && (
+          <div style={styles.tags}>
+            <TagBadge tag="Все" active={activeTags.length === 0} onClick={() => handleTagClick('')} />
+            {POPULAR_TAGS.map(tag => (
+              <TagBadge
+                key={tag}
+                tag={tag}
+                active={activeTags.includes(tag)}
+                onClick={() => handleTagClick(tag)}
+              />
+            ))}
+          </div>
+        )}
+        {activeTags.length > 0 && !isSearchMode && (
           <p style={styles.activeTags}>
             Выбрано: {activeTags.map(t => `#${t}`).join(', ')}
-            <button style={styles.clearTags} onClick={() => setActiveTags([])}>
-              сбросить
-            </button>
+            <button style={styles.clearTags} onClick={() => setActiveTags([])}>сбросить</button>
           </p>
         )}
       </div>
@@ -190,25 +191,27 @@ function HomePage() {
         {loading && !isLoadingMore
           ? Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)
           : filteredArticles.map(article => (
-              <PostCard
-                key={article.id}
-                article={article}
-                onNavigate={handleNavigate}
-              />
+              <PostCard key={article.id} article={article} onNavigate={handleNavigate} />
             ))
         }
       </div>
 
-      {filteredArticles.length === 0 && !loading && activeTags.length > 1 && (
+      {filteredArticles.length === 0 && !loading && (
         <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>
           <p style={{ fontSize: '48px', marginBottom: '12px' }}>📭</p>
-          <p>Нет статей по всем выбранным тегам сразу</p>
-          <button
-            style={{ ...styles.loadMore, marginTop: '16px' }}
-            onClick={() => setActiveTags([activeTags[0]])}
-          >
-            Оставить только #{activeTags[0]}
-          </button>
+          <p>
+            {isSearchMode
+              ? `Ничего не найдено по запросу «${debouncedSearch}»`
+              : 'Нет статей по выбранным тегам'}
+          </p>
+          {activeTags.length > 1 && !isSearchMode && (
+            <button
+              style={{ ...styles.loadMore, marginTop: '16px' }}
+              onClick={() => setActiveTags([activeTags[0]])}
+            >
+              Оставить только #{activeTags[0]}
+            </button>
+          )}
         </div>
       )}
 
@@ -218,7 +221,7 @@ function HomePage() {
         </div>
       )}
 
-      {!loading && !error && data && data.length === 100 && activeTags.length <= 1 && (
+      {!loading && !error && !isSearchMode && data && data.length === 100 && activeTags.length <= 1 && (
         <button style={styles.loadMore} onClick={handleLoadMore}>
           Загрузить ещё
         </button>
