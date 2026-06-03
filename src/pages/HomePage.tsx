@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useFeed } from '../context/FeedContext';
 import PostCard from '../components/PostCard/PostCard';
 import SearchBar from '../components/SearchBar/SearchBar';
@@ -40,7 +39,6 @@ function SkeletonCard() {
 }
 
 function HomePage() {
-  const navigate = useNavigate();
   const { articles, setArticles, currentPage, setCurrentPage, search, setSearch } = useFeed();
   const [activeTags, setActiveTags]     = useState<string[]>([]);
   const [loading, setLoading]           = useState(false);
