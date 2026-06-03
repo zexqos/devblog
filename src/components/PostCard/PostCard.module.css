@@ -5,11 +5,8 @@
   overflow: hidden;
   transition: transform 0.2s, box-shadow 0.2s;
   cursor: pointer;
-  
-  /* Исправление бага высоты: выстраиваем карточку в колонку и заставляем её растягиваться на 100% строки */
   display: flex;
   flex-direction: column;
-  height: 100%;
 }
 
 .card:hover {
@@ -22,6 +19,7 @@
   height: 180px;
   object-fit: cover;
   display: block;
+  flex-shrink: 0;
 }
 
 .coverPlaceholder {
@@ -32,15 +30,14 @@
   align-items: center;
   justify-content: center;
   font-size: 40px;
+  flex-shrink: 0;
 }
 
 .body {
   padding: 16px;
-  
-  /* Исправление бага высоты: заставляем текстовое тело заполнять всё доступное пространство */
   display: flex;
   flex-direction: column;
-  flex-grow: 1;
+  flex: 1;
 }
 
 .tags {
@@ -54,7 +51,7 @@
   font-size: 17px;
   font-weight: 700;
   color: var(--text-primary);
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   line-height: 1.4;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -62,8 +59,18 @@
   overflow: hidden;
 }
 
-.title:hover {
-  color: var(--accent);
+.title:hover { color: var(--accent); }
+
+.description {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-bottom: 10px;
+  flex: 1;
 }
 
 .meta {
@@ -73,6 +80,7 @@
   font-size: 13px;
   color: var(--text-secondary);
   margin-bottom: 12px;
+  flex-wrap: wrap;
 }
 
 .avatar {
@@ -82,9 +90,7 @@
   object-fit: cover;
 }
 
-.dot { 
-  color: var(--border); 
-}
+.dot { color: var(--border); }
 
 .actions {
   display: flex;
@@ -92,9 +98,7 @@
   gap: 8px;
   padding-top: 12px;
   border-top: 1px solid var(--border);
-  
-  /* Исправление бага высоты: автоматический маржин сверху железно выталкивает блок к нижнему краю карточки */
-  margin-top: auto; 
+  margin-top: auto;
 }
 
 .actionBtn {
@@ -115,21 +119,5 @@
   color: var(--text-primary);
 }
 
-.actionBtnActive {
-  color: var(--accent);
-}
-
-.bookmarkBtn {
-  margin-left: auto;
-}
-
-.description {
-  font-size: 14px;
-  color: var(--text-secondary);
-  line-height: 1.5;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  margin-bottom: 8px;
-}
+.actionBtnActive { color: var(--accent); }
+.bookmarkBtn { margin-left: auto; }
