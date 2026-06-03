@@ -48,8 +48,8 @@ function HomePage() {
   const [moreLoading, setMoreLoading]   = useState(false);
   const [error, setError]               = useState<string | null>(null);
 
-  const debouncedSearch = useDebounce(search, 300);
-  const isSearchMode = debouncedSearch.trim().length > 0;
+  // Используем поисковый запрос напрямую для мгновенного отклика при возврате назад
+  const isSearchMode = search.trim().length > 0;
 
   const fetchArticles = useCallback(async (tag?: string, isLoadMore = false) => {
     if (isLoadMore) {
@@ -89,22 +89,23 @@ function HomePage() {
     }
   }, [currentPage, articles, setArticles, setCurrentPage]);
 
+  // Загружаем только если массив пустой (первый вход на сайт) или изменились теги
   useEffect(() => {
-    if (articles.length > 0 && activeTags.length === 0) {
-      return;
+    if (articles.length === 0 || activeTags.length > 0) {
+      fetchArticles(activeTags[0], false);
     }
-    fetchArticles(activeTags[0], false);
   }, [activeTags]);
 
+  // Фильтрация без дебаунса для мгновенного восстановления состояния из контекста
   const filteredArticles = useMemo(() => {
-    const query = debouncedSearch.toLowerCase().trim();
+    const query = search.toLowerCase().trim();
     if (!query) return articles;
 
     return articles.filter(article => 
       article.title.toLowerCase().includes(query) || 
       (article.description && article.description.toLowerCase().includes(query))
     );
-  }, [articles, debouncedSearch]);
+  }, [articles, search]);
 
   const handleSearchChange = (val: string) => {
     setSearch(val);
@@ -178,7 +179,7 @@ function HomePage() {
             fontSize: '14px',
             color: 'var(--text-secondary)',
           }}>
-            🔍 Поиск: <b style={{ color: 'var(--text-primary)' }}>«{debouncedSearch}»</b>
+            🔍 Поиск: <b style={{ color: 'var(--text-primary)' }}>«{search}»</b>
             {<span>— {filteredArticles.length} найденных статей</span>}
             <button
               onClick={handleResetSearch}
@@ -217,7 +218,7 @@ function HomePage() {
           <p style={{ fontSize: '54px', marginBottom: '16px', margin: 0 }}>📭</p>
           <h3 style={{ color: 'var(--text-primary)', fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Ничего не найдено</h3>
           <p style={{ fontSize: '14px', maxWidth: '400px', margin: '0 auto' }}>
-            По запросу <span style={{ color: 'var(--text-primary)', fontWeight: '600' }}>«{debouncedSearch}»</span> не нашлось подходящих публикаций в текущей ленте.
+            По запросу <span style={{ color: 'var(--text-primary)', fontWeight: '600' }}>«{search}»</span> не нашлось подходящих публикаций в текущей ленте.
           </p>
           <button onClick={handleResetSearch} style={{ ...styles.loadMore, marginTop: '20px' }}>
             Сбросить поиск
